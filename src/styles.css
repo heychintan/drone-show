@@ -1,0 +1,106 @@
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: #040508;
+  overflow: hidden;
+}
+
+.stage {
+  position: fixed;
+  inset: 0;
+}
+
+.sky {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  cursor: crosshair;
+}
+
+/* ---- overlay chrome (never intercepts the swarm) ---- */
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  font-family: 'Inter', 'Helvetica Neue', sans-serif;
+  color: #dfe9f5;
+}
+
+.brand {
+  position: absolute;
+  top: 34px;
+  left: 42px;
+}
+
+.brand-mark {
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.52em;
+  color: #eef5fd;
+  text-shadow: 0 0 24px rgba(140, 200, 255, 0.35);
+}
+
+.brand-sub {
+  margin-top: 7px;
+  font-size: 10px;
+  font-weight: 300;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: rgba(200, 220, 240, 0.42);
+}
+
+.tagline {
+  position: absolute;
+  top: 40px;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  width: fit-content;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-weight: 300;
+  font-size: 19px;
+  letter-spacing: 0.06em;
+  color: rgba(210, 226, 244, 0.55);
+}
+
+.caption-slot {
+  position: absolute;
+  bottom: 88px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+}
+
+.caption {
+  font-size: 11px;
+  font-weight: 400;
+  text-transform: uppercase;
+  color: rgba(220, 236, 252, 0.72);
+  text-shadow: 0 0 18px rgba(120, 190, 255, 0.45);
+  padding-left: 0.42em; /* optically balance the letter-spacing */
+}
+
+.hint {
+  position: absolute;
+  bottom: 30px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 10.5px;
+  font-weight: 300;
+  letter-spacing: 0.14em;
+  color: rgba(190, 210, 232, 0.8);
+}
+
+@media (max-width: 640px) {
+  .tagline { display: none; }
+  .brand { top: 24px; left: 24px; }
+}
