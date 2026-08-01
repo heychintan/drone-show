@@ -2,24 +2,64 @@ import { useEffect, useRef, useState } from 'react'
 import { useDialKit } from 'dialkit'
 import { motion, AnimatePresence } from 'motion/react'
 import { SwarmEngine } from './engine/SwarmEngine.js'
+import sceneBw from './assets/scenes/bw.jpg'
+import sceneShiny from './assets/scenes/shiny.jpg'
+import sceneEvening from './assets/scenes/evening.jpg'
+import sceneBlueCity from './assets/scenes/blue-city.jpg'
+import sceneRedCity from './assets/scenes/red-city.avif'
+
+// Bundled preset backdrops. Local assets are same-origin, so the composite
+// canvas stays exportable (no cross-origin taint) for the download button.
+const PRESETS = [
+  { id: 'bw', src: sceneBw },
+  { id: 'shiny', src: sceneShiny },
+  { id: 'evening', src: sceneEvening },
+  { id: 'blue-city', src: sceneBlueCity },
+  { id: 'red-city', src: sceneRedCity },
+]
 
 export default function App() {
   const canvasRef = useRef(null)
   const engineRef = useRef(null)
   const fileRef = useRef(null)
   const [caption, setCaption] = useState(null)
+  const [selectedPhoto, setSelectedPhoto] = useState(null)
+
+  const applyPhoto = (src, onReady) => {
+    const img = new Image()
+    img.onload = () => {
+      engineRef.current?.setCustomImage(img)
+      onReady?.()
+    }
+    img.src = src
+  }
+
+  const onPreset = (preset) => {
+    setSelectedPhoto(preset.id)
+    applyPhoto(preset.src)
+  }
 
   const onPhotoPicked = (e) => {
     const file = e.target.files && e.target.files[0]
     if (!file) return
     const url = URL.createObjectURL(file)
-    const img = new Image()
-    img.onload = () => {
-      engineRef.current?.setCustomImage(img)
-      URL.revokeObjectURL(url)
-    }
-    img.src = url
+    applyPhoto(url, () => URL.revokeObjectURL(url))
+    setSelectedPhoto('custom')
     e.target.value = '' // allow re-picking the same file
+  }
+
+  const onDownload = () => {
+    const dataUrl = engineRef.current?.capture()
+    if (!dataUrl) return
+    const stamp = new Date()
+      .toISOString()
+      .replace(/[:.]/g, '-')
+      .replace('T', '_')
+      .slice(0, 19)
+    const a = document.createElement('a')
+    a.href = dataUrl
+    a.download = `lumen_${stamp}.png`
+    a.click()
   }
 
   const params = useDialKit(
@@ -30,6 +70,7 @@ export default function App() {
         options: ['Globe', 'Galaxy', 'Rings', 'Star', 'Wave', 'Wordmark'],
         default: 'Globe',
       },
+      wordmarkText: { type: 'text', default: 'LUMEN', placeholder: 'LUMEN' },
       autoCycle: true,
       speed: [1, 0.25, 2.5, 0.05],
       drones: [450, 120, 900, 10],
@@ -82,6 +123,7 @@ export default function App() {
   useEffect(() => { engineRef.current?.setPalette(params.mood) }, [params.mood])
   useEffect(() => { engineRef.current?.setCount(params.drones) }, [params.drones])
   useEffect(() => { engineRef.current?.setScene(params.scene) }, [params.scene])
+  useEffect(() => { engineRef.current?.setWordmarkText(params.wordmarkText) }, [params.wordmarkText])
 
   const firstFormation = useRef(true)
   useEffect(() => {
@@ -115,7 +157,7 @@ export default function App() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.2, duration: 1.6, ease: 'easeOut' }}
         >
-          <div className="brand-mark">LUMEN</div>
+          <div className="brand-mark">{(params.wordmarkText || 'LUMEN').toUpperCase()}</div>
           <div className="brand-sub">drone light shows</div>
         </motion.header>
 
@@ -143,6 +185,40 @@ export default function App() {
               </motion.div>
             )}
           </AnimatePresence>
+        </div>
+
+        <div className="photo-dock">
+          {PRESETS.map((p) => (
+            <button
+              key={p.id}
+              type="button"
+              className={
+                'photo-thumb' + (selectedPhoto === p.id ? ' is-active' : '')
+              }
+              style={{ backgroundImage: `url(${p.src})` }}
+              onClick={() => onPreset(p)}
+              aria-label={`Backdrop ${p.id}`}
+            />
+          ))}
+          <button
+            type="button"
+            className={
+              'photo-thumb photo-add' +
+              (selectedPhoto === 'custom' ? ' is-active' : '')
+            }
+            onClick={() => fileRef.current?.click()}
+            aria-label="Upload your own photo"
+          >
+            +
+          </button>
+          <button
+            type="button"
+            className="photo-download"
+            onClick={onDownload}
+            aria-label="Download this moment"
+          >
+            ↓ Save
+          </button>
         </div>
 
         <motion.footer
