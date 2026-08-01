@@ -1,4 +1,4 @@
-import { FORMATIONS, FORMATION_ORDER } from './shapes.js'
+import { FORMATIONS, FORMATION_ORDER, setWordmarkText } from './shapes.js'
 
 // ---------------------------------------------------------------------------
 // SwarmEngine — a fleet of individual agents. Each drone is a damped spring
@@ -133,6 +133,25 @@ export class SwarmEngine {
     this.customImage = img
     this.scene = 'Custom'
     this._buildBackground()
+  }
+
+  // Grab the live composite (sky + drone formation) as a PNG data URL.
+  // The visible canvas already holds both layers, so this captures exactly
+  // what's on screen at the moment of the call.
+  capture() {
+    try {
+      return this.canvas.toDataURL('image/png')
+    } catch (_) {
+      return null // tainted canvas (cross-origin image) — cannot export
+    }
+  }
+
+  setWordmarkText(text) {
+    setWordmarkText(text)
+    // if the fleet is currently spelling the wordmark, re-fly into the new text
+    if (this.formation === 'Wordmark' && this.started) {
+      this.setFormation('Wordmark', { quick: true, announce: false })
+    }
   }
 
   setPalette(name) {

@@ -201,6 +201,14 @@ export function wave(n) {
 
 // --- Wordmark: rasterize text and sample lit pixels --------------------------
 let wordmarkCache = null
+let wordmarkText = 'LUMEN'
+
+export function setWordmarkText(t) {
+  const next = String(t || '').toUpperCase().trim() || 'LUMEN'
+  if (next === wordmarkText) return
+  wordmarkText = next
+  wordmarkCache = null // force re-rasterize with the new text
+}
 
 function rasterizeWordmark() {
   if (wordmarkCache) return wordmarkCache
@@ -215,7 +223,7 @@ function rasterizeWordmark() {
   ctx.textBaseline = 'middle'
   ctx.font = '500 218px Inter, "Helvetica Neue", sans-serif'
   try { ctx.letterSpacing = '26px' } catch (_) { /* older engines */ }
-  ctx.fillText('LUMEN', W / 2, H / 2 + 8)
+  ctx.fillText(wordmarkText, W / 2, H / 2 + 8)
   const img = ctx.getImageData(0, 0, W, H).data
   const found = []
   const step = 5
